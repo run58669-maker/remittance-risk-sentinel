@@ -11,8 +11,8 @@ upload the video and push the repo.)*
 
 **Track / theme:** AI × Blockchain · stablecoins / payments (Bitso)
 
-**Demo video:** ⟨YOUTUBE_LINK⟩
-**Repo:** ⟨https://github.com/run58669-maker/remittance-risk-sentinel⟩
+**Demo video:** ⟨YOUTUBE_LINK — upload build/demo/demo.mp4⟩
+**Repo:** https://github.com/run58669-maker/remittance-risk-sentinel
 
 ---
 
