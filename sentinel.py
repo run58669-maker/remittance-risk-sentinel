@@ -14,11 +14,18 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import sys
 import time
+
+try:  # keep the demo from dying on non-ASCII output on legacy consoles (e.g. Windows GBK)
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 
 import flow_monitor as fm
 import risk_note as rn
 import treasury as tr
+from tg_bot import TGBot
 
 LIVE_WINDOW_BLOCKS = 1200
 NOTE_SEVERITIES = {"critical", "high"}
@@ -44,9 +51,10 @@ def emit(symbol: str, anomalies: list, tg=None, do_notes: bool = True) -> None:
             print(f"  │ {line}")
         print(f"  └─ (LLM via {meta.get('via')})")
         if tg:
-            tg.send_alert(wallet_tag=f"{symbol} {a.kind}",
-                          wallet_addr=(a.addrs[0] if a.addrs else "-"),
-                          kind=a.kind, details=a.detail, interpretation=note)
+            ok, info = tg.send_alert(wallet_tag=f"{symbol} {a.kind}",
+                                     wallet_addr=(a.addrs[0] if a.addrs else "-"),
+                                     kind=a.kind, details=a.detail, interpretation=note)
+            print(f"  └─ TG: {'sent OK, msg ' + str(info) if ok else 'FAILED ' + str(info)}")
     if len(notable) > MAX_NOTES_PER_TICK:
         print(f"  … +{len(notable) - MAX_NOTES_PER_TICK} more critical/high (capped)")
 
@@ -86,7 +94,9 @@ def main():
 
     tokens = fm.load_tokens()["tokens"]
     rpc = fm.arbitrum_rpc()
-    tg = None  # set when TG_BOT_TOKEN configured
+    _tg = TGBot()                       # reads TG_BOT_TOKEN / TG_CHAT_ID from .env
+    tg = _tg if _tg.token else None
+    print("  (Telegram alerts: " + ("ON" if tg else "off — no TG_BOT_TOKEN") + ")")
     seen: set = set()
     try:
         while True:
